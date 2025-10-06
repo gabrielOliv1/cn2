@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rental App - Locação de Automóveis</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Car Rental App</h1>
+            <nav class="nav">
+                <a href="index.html" class="nav-link">Início</a>
+                <a href="admin.html" class="nav-link">Admin</a>
+                <a href="client.html" class="nav-link">Cliente</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section>
+                <h2>Bem-vindo ao Sistema de Locação de Automóveis</h2>
+                <p>Gerencie veículos, clientes e locações de forma simples e eficiente.</p>
+            </section>
+
+            <section>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Gerenciar Veículos</h3>
+                        <p>Cadastre, edite e gerencie sua frota de veículos com fotos e informações detalhadas.</p>
+                        <a href="admin.html#vehicles" class="btn btn-primary">Gerenciar</a>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>Gerenciar Clientes</h3>
+                        <p>Mantenha o cadastro de clientes atualizado com histórico de locações.</p>
+                        <a href="admin.html#clients" class="btn btn-primary">Gerenciar</a>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3>Gerenciar Locações</h3>
+                        <p>Crie e acompanhe todas as locações de veículos com datas e valores.</p>
+                        <a href="admin.html#rentals" class="btn btn-primary">Gerenciar</a>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>Estatísticas Rápidas</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="total-vehicles">-</span>
+                        <span>Veículos Cadastrados</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="total-clients">-</span>
+                        <span>Clientes Ativos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="active-rentals">-</span>
+                        <span>Locações Ativas</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="js/app.js"></script>
+</body>
+</html>
