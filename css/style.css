@@ -48,6 +48,69 @@
     flex: 0 0 25%;
 }
 
+/* Formulários básicos */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+}
+
+/* Tabelas básicas */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.table th,
+.table td {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+.table th {
+    background: #f0f0f0;
+}
+
+/* Cards básicos */
+.card {
+    border: 1px solid #ccc;
+    margin: 1rem 0;
+}
+
+.card-header {
+    padding: 0.5rem;
+    background: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+/* Botões básicos */
+button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #333;
+    background: white;
+    cursor: pointer;
+    margin: 0.25rem;
+}
+
+button:hover {
+    background: #f0f0f0;
+}
+
 @media (max-width: 768px) {
     .header .container {
         flex-direction: column;

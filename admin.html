@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Car Rental App</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Car Rental App - Admin</h1>
+            <nav class="nav">
+                <a href="index.html">Início</a>
+                <a href="admin.html">Admin</a>
+                <a href="client.html">Cliente</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <section>
+                <h2>Painel Administrativo</h2>
+                
+                <div class="row">
+                    <div class="col-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Navegação</h3>
+                            </div>
+                            <div class="card-body">
+                                <button onclick="showSection('vehicles')">Veículos</button><br><br>
+                                <button onclick="showSection('clients')">Clientes</button><br><br>
+                                <button onclick="showSection('rentals')">Locações</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <!-- Seção Veículos -->
+                        <div id="vehicles-section" class="section">
+                            <h3>Gerenciar Veículos</h3>
+                            
+                            <!-- Formulário de Veículo -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 id="vehicle-form-title">Cadastrar Veículo</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form id="vehicle-form">
+                                        <input type="hidden" name="isEditing" value="false">
+                                        <input type="hidden" name="originalPlaca" value="">
+                                        <input type="hidden" name="imagemUrl" id="vehicle-imagem-url">
+                                        
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Marca *</label>
+                                                    <input type="text" name="marca" class="form-control" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Modelo *</label>
+                                                    <input type="text" name="modelo" class="form-control" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <label>Ano *</label>
+                                                    <input type="number" name="ano" class="form-control" min="1900" max="2030" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <label>Placa *</label>
+                                                    <input type="text" name="placa" class="form-control" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="form-group">
+                                                    <label>Preço Diária *</label>
+                                                    <input type="number" name="precoDiaria" class="form-control" step="0.01" min="0" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Cor</label>
+                                                    <input type="text" name="cor" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Combustível</label>
+                                                    <select name="combustivel" class="form-control">
+                                                        <option value="">Selecione</option>
+                                                        <option value="Flex">Flex</option>
+                                                        <option value="Gasolina">Gasolina</option>
+                                                        <option value="Etanol">Etanol</option>
+                                                        <option value="Diesel">Diesel</option>
+                                                        <option value="GNV">GNV</option>
+                                                        <option value="Elétrico">Elétrico</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Observações</label>
+                                            <textarea name="observacoes" class="form-control" rows="3"></textarea>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>
+                                                <input type="checkbox" name="disponivel" checked> Disponível para locação
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Imagem do Veículo</label>
+                                            <input type="file" id="vehicle-image-input" accept="image/*" onchange="handleVehicleImageUpload()">
+                                            <div id="image-preview"></div>
+                                        </div>
+                                        
+                                        <button type="button" id="save-vehicle-btn" onclick="saveVehicle()">Salvar</button>
+                                        <button type="button" onclick="clearVehicleForm()">Limpar</button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <!-- Busca de Veículos -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4>Buscar Veículos</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <input type="text" id="search-marca" placeholder="Marca" class="form-control">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="text" id="search-modelo" placeholder="Modelo" class="form-control">
+                                        </div>
+                                        <div class="col-4">
+                                            <input type="number" id="search-preco" placeholder="Preço máximo" class="form-control">
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <button onclick="searchVehiclesForm()">Buscar</button>
+                                    <button onclick="loadVehicles()">Mostrar Todos</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de Veículos -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4>Lista de Veículos</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="vehicles-list">Carregando...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Seção Clientes -->
+                        <div id="clients-section" class="section" style="display: none;">
+                            <h3>Gerenciar Clientes</h3>
+                            <p>Funcionalidade em desenvolvimento...</p>
+                        </div>
+                        
+                        <!-- Seção Locações -->
+                        <div id="rentals-section" class="section" style="display: none;">
+                            <h3>Gerenciar Locações</h3>
+                            <p>Funcionalidade em desenvolvimento...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/azure-table.js"></script>
+    <script src="js/azure-blob.js"></script>
+    <script src="js/vehicles.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            if (sectionName === 'vehicles') {
+                loadVehicles();
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('vehicles');
+        });
+    </script>
+</body>
+</html>

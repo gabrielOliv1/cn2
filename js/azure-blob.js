@@ -1,41 +1,53 @@
 const AZURE_BLOB_CONFIG = {
-    baseUrl: 'https://stop1cn2.blob.core.windows.net/?sv=2024-11-04&ss=bft&srt=sco&sp=rwdlacuiytfx&se=2025-11-07T05:54:06Z&st=2025-10-06T21:39:06Z&spr=https,http&sig=lCWLP6OPnUByrISGDMxyDk%2FZdE1WdyFkXd0XO9KG5PA%3D',
+    storageAccount: 'stop1cn2',
     containerName: 'gabriel-oliveira-veiculos-cn2',
     sasToken: 'sv=2024-11-04&ss=bft&srt=sco&sp=rwdlacuiytfx&se=2025-11-07T05:54:06Z&st=2025-10-06T21:39:06Z&spr=https,http&sig=lCWLP6OPnUByrISGDMxyDk%2FZdE1WdyFkXd0XO9KG5PA%3D'
 };
 
 function uploadImage(file, fileName) {
-    const url = `${AZURE_BLOB_CONFIG.baseUrl}/${AZURE_BLOB_CONFIG.containerName}/${file.name}?${AZURE_BLOB_CONFIG.sasToken}`;
+    // URL correta: https://storageaccount.blob.core.windows.net/container/blob?sasToken
+    const url = `https://${AZURE_BLOB_CONFIG.storageAccount}.blob.core.windows.net/${AZURE_BLOB_CONFIG.containerName}/${fileName}?${AZURE_BLOB_CONFIG.sasToken}`;
+    
+    console.log('🔵 Iniciando upload...');
+    console.log('📁 Arquivo:', file.name, 'Tamanho:', file.size, 'bytes');
+    console.log('🌐 URL:', url);
     
     return fetch(url, {
         method: 'PUT',
         headers: {
             'x-ms-blob-type': 'BlockBlob',
-            'Content-Type': file.type
+            'Content-Type': file.type || 'application/octet-stream'
         },
         body: file
     })
     .then(response => {
+        console.log('📡 Resposta do servidor:', response.status, response.statusText);
+        
         if (!response.ok) {
-            throw new Error(`Erro no upload: ${response.status}`);
+            return response.text().then(text => {
+                console.error('❌ Erro detalhado:', text);
+                throw new Error(`Erro no upload: ${response.status} - ${response.statusText}`);
+            });
         }
+        
+        console.log('✅ Upload concluído com sucesso!');
         return response;
     })
     .then(() => {
         return getImageUrl(fileName);
     })
     .catch(error => {
-        console.error('Erro no upload da imagem:', error);
+        console.error('💥 Erro no upload da imagem:', error);
         throw error;
     });
 }
 
 function getImageUrl(fileName) {
-    return `${AZURE_BLOB_CONFIG.baseUrl}&$container=${AZURE_BLOB_CONFIG.containerName}&$blob=${fileName}`;
+    return `https://${AZURE_BLOB_CONFIG.storageAccount}.blob.core.windows.net/${AZURE_BLOB_CONFIG.containerName}/${fileName}?${AZURE_BLOB_CONFIG.sasToken}`;
 }
 
 function deleteImage(fileName) {
-    const url = `${AZURE_BLOB_CONFIG.baseUrl}&$container=${AZURE_BLOB_CONFIG.containerName}&$blob=${fileName}`;
+    const url = `https://${AZURE_BLOB_CONFIG.storageAccount}.blob.core.windows.net/${AZURE_BLOB_CONFIG.containerName}/${fileName}?${AZURE_BLOB_CONFIG.sasToken}`;
     
     return fetch(url, {
         method: 'DELETE'
@@ -60,19 +72,10 @@ function generateFileName(originalName, prefix = '') {
 }
 
 function validateImageFile(file) {
-    const maxSize = 5 * 1024 * 1024;
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    
-    if (!allowedTypes.includes(file.type)) {
-        showAlert('Tipo de arquivo não permitido. Use JPG, PNG ou GIF.', 'danger');
+    if (file.size > 5000000) {
+        alert('Arquivo muito grande. Máximo 5MB.');
         return false;
     }
-    
-    if (file.size > maxSize) {
-        showAlert('Arquivo muito grande. Máximo 5MB.', 'danger');
-        return false;
-    }
-    
     return true;
 }
 
@@ -93,28 +96,21 @@ function handleImageUpload(inputElement, callback) {
     const file = inputElement.files[0];
     
     if (!file) {
-        showAlert('Nenhum arquivo selecionado.', 'danger');
+        alert('Selecione uma imagem');
         return;
     }
     
-    if (!validateImageFile(file)) {
-        return;
-    }
-    
-    const fileName = generateFileName(file.name, 'veiculo_');
-    
-    showLoading('upload-status');
+    const fileName = 'veiculo_' + Date.now() + '_' + file.name;
     
     uploadImage(file, fileName)
         .then(imageUrl => {
-            hideLoading('upload-status', 'Upload concluído!');
+            alert('Upload concluído!');
             if (callback) {
                 callback(imageUrl, fileName);
             }
         })
         .catch(error => {
-            hideLoading('upload-status', 'Erro no upload');
-            showAlert('Erro ao fazer upload da imagem: ' + error.message, 'danger');
+            alert('Erro no upload: ' + error.message);
         });
 }
 
