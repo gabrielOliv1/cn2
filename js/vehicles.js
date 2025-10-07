@@ -1,7 +1,14 @@
 function createVehicle(vehicleData) {
+    console.log('🚗 Criando veículo...');
+    console.log('📋 Dados recebidos:', vehicleData);
+    
+    // Garantir que PartitionKey e RowKey existam
     const vehicle = {
-        PartitionKey: 'Veiculo',
+        // CHAVES OBRIGATÓRIAS DO AZURE TABLE STORAGE
+        PartitionKey: 'VEICULOS',
         RowKey: vehicleData.placa,
+        
+        // DADOS DO VEÍCULO
         Marca: vehicleData.marca,
         Modelo: vehicleData.modelo,
         Ano: vehicleData.ano,
@@ -14,6 +21,7 @@ function createVehicle(vehicleData) {
         Observacoes: vehicleData.observacoes
     };
 
+    console.log('📊 Dados formatados para Table Storage:', vehicle);
     return createEntity('Veiculos', vehicle);
 }
 
@@ -22,7 +30,7 @@ function getAllVehicles() {
 }
 
 function getVehicleByPlaca(placa) {
-    return getEntity('Veiculos', 'Veiculo', placa);
+    return getEntity('Veiculos', 'VEICULOS', placa);
 }
 
 function updateVehicle(placa, vehicleData) {
@@ -38,11 +46,11 @@ function updateVehicle(placa, vehicleData) {
         Observacoes: vehicleData.observacoes
     };
 
-    return updateEntity('Veiculos', 'Veiculo', placa, updatedData);
+    return updateEntity('Veiculos', 'VEICULOS', placa, updatedData);
 }
 
 function deleteVehicle(placa) {
-    return deleteEntity('Veiculos', 'Veiculo', placa);
+    return deleteEntity('Veiculos', 'VEICULOS', placa);
 }
 
 function getAvailableVehicles() {
@@ -84,7 +92,13 @@ function renderVehiclesTable(vehicles, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    if (!vehicles || vehicles.length === 0) {
+    console.log('🖼️ Renderizando tabela de veículos...');
+    console.log('📊 Dados recebidos:', vehicles);
+
+    // Verificar se vehicles tem propriedade value (resposta do Azure)
+    const vehiclesList = vehicles.value || vehicles;
+
+    if (!vehiclesList || vehiclesList.length === 0) {
         container.innerHTML = '<div>Nenhum veículo encontrado.</div>';
         return;
     }
@@ -93,6 +107,7 @@ function renderVehiclesTable(vehicles, containerId) {
         <table class="table">
             <thead>
                 <tr>
+                    <th>Imagem</th>
                     <th>Placa</th>
                     <th>Marca/Modelo</th>
                     <th>Ano</th>
@@ -104,9 +119,13 @@ function renderVehiclesTable(vehicles, containerId) {
             <tbody>
     `;
 
-    vehicles.forEach(vehicle => {
+    vehiclesList.forEach(vehicle => {
+        console.log('🔍 Processando veículo:', vehicle.Placa);
+        console.log('🖼️ URL da imagem:', vehicle.ImagemUrl);
+        
         html += `
             <tr>
+                <td id="img-${vehicle.Placa}">Carregando...</td>
                 <td>${vehicle.Placa}</td>
                 <td>${vehicle.Marca} ${vehicle.Modelo}</td>
                 <td>${vehicle.Ano}</td>
@@ -126,6 +145,53 @@ function renderVehiclesTable(vehicles, containerId) {
     `;
 
     container.innerHTML = html;
+    
+    // Carregar imagens após renderizar a tabela
+    loadVehicleImages(vehiclesList);
+}
+
+function loadVehicleImages(vehicles) {
+    console.log('🖼️ Carregando imagens dos veículos...');
+    console.log(`📊 ${vehicles.length} veículos para processar`);
+    
+    vehicles.forEach(vehicle => {
+        const imgContainer = document.getElementById(`img-${vehicle.Placa}`);
+        if (!imgContainer) {
+            console.log(`❌ Container não encontrado para placa: ${vehicle.Placa}`);
+            return;
+        }
+        
+        console.log(`🔍 Processando veículo: ${vehicle.Placa}`);
+        console.log(`📋 Dados do veículo:`, vehicle);
+        
+        if (vehicle.ImagemUrl) {
+            console.log(`🖼️ URL da imagem: ${vehicle.ImagemUrl}`);
+            
+            // Criar elemento img com tratamento de erro
+            const img = document.createElement('img');
+            img.style.maxWidth = '80px';
+            img.style.maxHeight = '60px';
+            img.style.border = '1px solid #ccc';
+            img.src = vehicle.ImagemUrl;
+            
+            img.onload = function() {
+                console.log(`✅ Imagem carregou com sucesso: ${vehicle.Placa}`);
+                imgContainer.innerHTML = '';
+                imgContainer.appendChild(img);
+            };
+            
+            img.onerror = function() {
+                console.log(`❌ Erro ao carregar imagem: ${vehicle.Placa}`);
+                console.log(`🔗 URL que falhou: ${vehicle.ImagemUrl}`);
+                imgContainer.innerHTML = '<div style="width: 80px; height: 60px; background: #f0f0f0; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 12px;">Erro ao carregar</div>';
+            };
+        } else {
+            console.log(`ℹ️ Veículo sem imagem: ${vehicle.Placa}`);
+            imgContainer.innerHTML = '<div style="width: 80px; height: 60px; background: #f0f0f0; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 12px;">Sem foto</div>';
+        }
+    });
+    
+    console.log('✅ Processamento de imagens concluído');
 }
 
 function loadVehicles() {
@@ -134,11 +200,13 @@ function loadVehicles() {
     getAllVehicles()
         .then(vehicles => {
             hideLoading('vehicles-list', '');
-            renderVehiclesTable(vehicles, 'vehicles-list');
+            // Verificar se vehicles tem propriedade value (resposta do Azure)
+            const vehiclesList = vehicles.value || vehicles;
+            renderVehiclesTable(vehiclesList, 'vehicles-list');
         })
         .catch(error => {
             hideLoading('vehicles-list', 'Erro ao carregar veículos');
-            showAlert('Erro ao carregar veículos: ' + error.message, 'danger');
+            showAlert('Erro ao carregar veículos: ' + error.message);
         });
 }
 
@@ -250,10 +318,23 @@ function searchVehiclesForm() {
 
     showLoading('vehicles-list');
 
-    searchVehicles(marca, modelo, precoMax)
+    // Buscar todos os veículos e filtrar localmente
+    getAllVehicles()
         .then(vehicles => {
+            let filteredVehicles = vehicles.value || vehicles;
+            
+            if (marca) {
+                filteredVehicles = filteredVehicles.filter(v => v.Marca.toLowerCase().includes(marca.toLowerCase()));
+            }
+            if (modelo) {
+                filteredVehicles = filteredVehicles.filter(v => v.Modelo.toLowerCase().includes(modelo.toLowerCase()));
+            }
+            if (precoMax) {
+                filteredVehicles = filteredVehicles.filter(v => v.PrecoDiaria <= parseFloat(precoMax));
+            }
+            
             hideLoading('vehicles-list', '');
-            renderVehiclesTable(vehicles, 'vehicles-list');
+            renderVehiclesTable(filteredVehicles, 'vehicles-list');
         })
         .catch(error => {
             hideLoading('vehicles-list', 'Erro na busca');
@@ -287,5 +368,45 @@ function handleVehicleImageUpload() {
         .catch(error => {
             console.error('Erro no upload da imagem do veículo:', error);
             alert('Erro no upload da imagem: ' + error.message);
+        });
+}
+
+// Função de teste para Table Storage
+function testTableStorage() {
+    console.log('🧪 Testando Table Storage...');
+    
+    const testVehicle = {
+        PartitionKey: 'VEICULOS',
+        RowKey: 'TEST' + Date.now(),
+        Marca: 'Teste',
+        Modelo: 'Debug',
+        Ano: 2024,
+        Placa: 'TEST' + Date.now(),
+        PrecoDiaria: 100.00,
+        Cor: 'Branco',
+        Combustivel: 'Gasolina',
+        Observacoes: 'Veículo de teste',
+        Disponivel: true,
+        ImagemUrl: 'https://stop1cn2.blob.core.windows.net/gabriel-oliveira-veiculos-cn2/test.jpg'
+    };
+    
+    console.log('📋 Dados do teste:', testVehicle);
+    
+    return createEntity('Veiculos', testVehicle)
+        .then(result => {
+            console.log('✅ Veículo criado com sucesso!');
+            console.log('📊 Resultado:', result);
+            return getAllEntities('Veiculos');
+        })
+        .then(entities => {
+            console.log('✅ Busca de veículos funcionou!');
+            console.log('📊 Quantidade encontrada:', entities.value ? entities.value.length : 0);
+            console.log('📋 Dados:', entities);
+            return entities;
+        })
+        .catch(error => {
+            console.error('❌ Erro no teste:', error);
+            console.error('🔍 Detalhes:', error.message);
+            throw error;
         });
 }
